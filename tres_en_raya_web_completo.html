@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tres en Raya</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00e676;
+      margin-bottom: 10px;
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #1f1f1f;
+      border: 2px solid #00e676;
+      font-size: 2.5rem;
+      color: #00e676;
+      text-align: center;
+      line-height: 100px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .cell:hover {
+      transform: scale(1.05);
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #00e676;
+      border: none;
+      border-radius: 5px;
+      color: #121212;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    @media (max-width: 400px) {
+      .game-board {
+        grid-template-columns: repeat(3, 80px);
+      }
+
+      .cell {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+        line-height: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tres en Raya</h1>
+  <div class="game-board" id="board"></div>
+  <div class="status" id="status">Turno de: X</div>
+  <button onclick="resetGame()">Reiniciar Juego</button>
+
+  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+  <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3"></audio>
+
+  <script>
+    const board = document.getElementById('board');
+    const status = document.getElementById('status');
+    const clickSound = document.getElementById('clickSound');
+    const winSound = document.getElementById('winSound');
+
+    let cells = Array(9).fill(null);
+    let currentPlayer = 'X';
+    let gameActive = true;
+
+    function renderBoard() {
+      board.innerHTML = '';
+      cells.forEach((cell, index) => {
+        const div = document.createElement('div');
+        div.classList.add('cell');
+        div.textContent = cell || '';
+        div.addEventListener('click', () => handleCellClick(index));
+        board.appendChild(div);
+      });
+    }
+
+    function handleCellClick(index) {
+      if (cells[index] || !gameActive) return;
+      clickSound.play();
+      cells[index] = currentPlayer;
+      renderBoard();
+      if (checkWinner()) {
+        status.textContent = `¡${currentPlayer} gana!`;
+        winSound.play();
+        gameActive = false;
+      } else if (cells.every(cell => cell)) {
+        status.textContent = "¡Empate!";
+        gameActive = false;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        status.textContent = `Turno de: ${currentPlayer}`;
+      }
+    }
+
+    function checkWinner() {
+      const winCombos = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      return winCombos.some(combo => {
+        const [a, b, c] = combo;
+        return cells[a] && cells[a] === cells[b] && cells[a] === cells[c];
+      });
+    }
+
+    function resetGame() {
+      cells = Array(9).fill(null);
+      currentPlayer = 'X';
+      gameActive = true;
+      status.textContent = 'Turno de: X';
+      renderBoard();
+    }
+
+    renderBoard();
+  </script>
+
+</body>
+</html>
